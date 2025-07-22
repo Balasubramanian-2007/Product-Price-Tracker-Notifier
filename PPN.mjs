@@ -12,7 +12,7 @@ web.use(cors()); // Allow requests from React frontend
 
 cron.schedule('0 12 * * *',async()=>{   // for actual process (check between 12 hours) but for testing i want to change it to 10 mins or less format
     console.log("checking price details");
-    const apikey = '3b591a173d1187cc3203253ee293cf5fceb1b666';
+    const apikey = '';
     const date=new Date();
     const info_for_datex=`${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`;
     const checking_time=await pool.query(`SELECT user_id,product_url,old_price FROM notificationTable`);
@@ -90,7 +90,7 @@ web.post("/login",async(req,res)=>{
 
 web.post("/home-search",(req,res)=>{
     const userURL=req.body.url;             //this may be changed according to frontend 
-    const apikey = '3b591a173d1187cc3203253ee293cf5fceb1b666';
+    const apikey = '';
     async function fetchProductDetails(){
     try {
         const response = await axios({
