@@ -1,0 +1,76 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "Samsung Galaxy M14 5G",
+      "image": "https://m.media-amazon.com/images/I/81ZSn2rk9cL._SX679_.jpg",
+      "price": 12499,
+      "oldPrice": 14999,
+      "rating": 4.3,
+      "reviews": 2345
+    },
+    {
+      "id": 2,
+      "name": "Apple AirPods Pro (2nd Generation)",
+      "image": "https://m.media-amazon.com/images/I/61f1YfTkTDL._SX679_.jpg",
+      "price": 24999,
+      "oldPrice": 26999,
+      "rating": 4.6,
+      "reviews": 12000
+    },
+    {
+      "id": 3,
+      "name": "boAt Xtend Smartwatch",
+      "image": "https://m.media-amazon.com/images/I/61IMRs+o0iL._SX679_.jpg",
+      "price": 1499,
+      "oldPrice": 7990,
+      "rating": 4.2,
+      "reviews": 8560
+    },
+    {
+      "id": 4,
+      "name": "Noise Buds VS104",
+      "image": "https://m.media-amazon.com/images/I/51HBom8xz7L._SX679_.jpg",
+      "price": 1099,
+      "oldPrice": 3499,
+      "rating": 4.1,
+      "reviews": 3000
+    },
+    {
+      "id": 5,
+      "name": "HP 15s Laptop, Intel i5 12th Gen",
+      "image": "https://m.media-amazon.com/images/I/81Wf8Z+FJBL._SX679_.jpg",
+      "price": 54999,
+      "oldPrice": 62999,
+      "rating": 4.5,
+      "reviews": 670
+    },
+    {
+      "id": 6,
+      "name": "Canon EOS 1500D DSLR Camera",
+      "image": "https://m.media-amazon.com/images/I/914hFeTU2-L._SX679_.jpg",
+      "price": 42999,
+      "oldPrice": 49999,
+      "rating": 4.4,
+      "reviews": 2100
+    },
+    {
+      "id": 7,
+      "name": "OnePlus Nord CE 3 Lite 5G",
+      "image": "https://m.media-amazon.com/images/I/71AvQd3VzqL._SX679_.jpg",
+      "price": 17999,
+      "oldPrice": 21999,
+      "rating": 4.3,
+      "reviews": 5400
+    },
+    {
+      "id": 8,
+      "name": "Sony WH-CH520 Wireless Headphones",
+      "image": "https://m.media-amazon.com/images/I/61vZbH1yGGL._SX679_.jpg",
+      "price": 3499,
+      "oldPrice": 4990,
+      "rating": 4.2,
+      "reviews": 3200
+    }
+  ]
+}
