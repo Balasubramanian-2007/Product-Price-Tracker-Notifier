@@ -3,19 +3,31 @@ import cors from 'cors'
 import axios from 'axios'
 import cron from 'node-cron'
 import nodemailer from 'nodemailer'
-// import pkg from 'pg'
+import pkg from 'pg'
+import bcrypt from 'bcrypt'
+import dotenv from 'dotenv'
 
 const web = express();
+dotenv.config();
 
-web.use(express.json()); // To handle JSON data from React
+const {Pool}=pkg;
+const pool=new Pool({
+    user:"postgres",
+    host:"localhost",
+    database:"ProductPriceNotifier",
+    password:process.env.DB_PASSWORD,
+    port:5432,
+})
+
+web.use(express.json()); // To handle JSON data from React  
 web.use(cors()); // Allow requests from React frontend
 
-cron.schedule('0 12 * * *',async()=>{   // for actual process (check between 12 hours) but for testing i want to change it to 10 mins or less format
+cron.schedule('*/10 * * * *',async()=>{   // for actual process (check between 12 hours) but for testing i want to change it to 10 mins or less format
     console.log("checking price details");
-    const apikey = '';
+    const apikey = process.env.Zenrows_API_KEY;
     const date=new Date();
-    const info_for_datex=`${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`;
-    const checking_time=await pool.query(`SELECT user_id,product_url,old_price FROM notificationTable`);
+    // const info_for_datex=`${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`;
+    const checking_time=await pool.query(`SELECT user_id,product_url,old_price,product_name FROM notificationTable`);
     for(const i of checking_time.rows){
         const url=i.product_url;
         try{
@@ -32,20 +44,20 @@ cron.schedule('0 12 * * *',async()=>{   // for actual process (check between 12 
             const newPrice=parseInt(data.price);
             
             const messageToSent=`❗️${i.product_name}\n Product link to Buy :${i.product_url} \n Old Price :${i.old_price}\n🚨NEW PRICE :${newPrice}\nThanks for using our Site ❗️`;
-            const userMailidFromDatabase=pool.query("SELECT mail_id FROM userTable WHERE user_id=$1",[i.user_id]);
+            const userMailidFromDatabase= await pool.query("SELECT mail_id FROM userTable WHERE user_id=$1",[i.user_id]);
             const senderEmail=userMailidFromDatabase.rows[0].mail_id; // wna to fill this part using sender mailID form database 
             if(newPrice<parseInt(i.old_price)){
-                pool.query(`UPDATE notificationTable SET old_price=$1,datex=$2 WHERE user_id=$3`,[newPrice,info_for_datex,i.user_id]);
+                await pool.query(`UPDATE notificationTable SET old_price=$1,datex=$2 WHERE user_id=$3`,[newPrice,date,i.user_id]);
                 const transporter=nodemailer.createTransport({
                     service:'gmail',
                     auth:{
                         user:'24205037@nec.edu.in',
-                        pass:'heug tgyx nrac pgce'
+                        pass:process.env.EMAIL_APP_CODE
                     }
                 });
                 const mailOptions={
                     from:'24205037@nec.edu.in',
-                    to:'subramaniang172@gmail.com',
+                    to:senderEmail,
                     subject:"📢 Price Dropped (Alert) !🚨",
                     text:messageToSent
                 };
@@ -66,20 +78,39 @@ cron.schedule('0 12 * * *',async()=>{   // for actual process (check between 12 
 })
 
 web.get("/",(req,res)=>{
-    //just wrote for testing
-    res.json({products:{name:"samsung",brand:"samsung",price:"90000"}});
+    res.json({msg:"welcome to backend ..."});
+})
+
+
+web.post("/register",async(req,res)=>{
+    const{userName,userid,useremail,userpassword}=req.body;
+    const saltRounds=10;
+    const hashed=await bcrypt.hash(userpassword,saltRounds);
+    try{
+        await pool.query(`INSERT INTO userTable(user_id,name,email_id,password) VALUES($1,$2,$3,$4)`,[userid,userName,useremail,hashed]);
+        res.json({"UserData":
+            {name:userName,id:userid,email:useremail,password:userpassword}
+        });
+    }
+    catch(err){
+        if(err.code=='23505'){
+            res.json({InvalidReq:"UserID already exists ! Please enter any other User ID"});
+        }
+        res.json({errMsg:"Some fields are invalid !"});
+    }
 })
 
 web.post("/login",async(req,res)=>{
     const {userID,userPassword}=req.body;  //the names should be modified based on the frontend ;
     try{
-        const check=await Pool.query(`SELECT password FROM userTable WHERE userid=$1`,[userID]);
-        if(check.rows.lenght === 0){
+        const check=await pool.query(`SELECT password FROM userTable WHERE user_id=$1`,[userID]);
+        if(check.rows.length === 0){
             res.json({register:"There is no account seems like this ! First register(signup) and then login"});
         }
-        const hashedPasswordFromDB = check.rows[0].user_password;
+        const hashedPasswordFromDB = check.rows[0].password;
         const isMatch = await bcrypt.compare(userPassword, hashedPasswordFromDB);
         if(isMatch){
+            // localStorage.setItem("userID",userID);
             res.json({status:"success",code:"accepted"});
         }
     }
@@ -88,9 +119,10 @@ web.post("/login",async(req,res)=>{
     }
 })
 
-web.post("/home-search",(req,res)=>{
+web.post("/home-search",async(req,res)=>{
     const userURL=req.body.url;             //this may be changed according to frontend 
-    const apikey = '';
+    await fetchProductDetails();
+    const apikey =process.env.Zenrows_API_KEY;
     async function fetchProductDetails(){
     try {
         const response = await axios({
@@ -118,23 +150,22 @@ web.post("/home-search",(req,res)=>{
 }
 })
 
-web.get("/notify",async(req,res)=>{
+web.post("/notify",async(req,res)=>{
 
     const userURL=req.body.url; 
-    const confirmation=req.body.confirm;
-    const notificationSendingMail=req.body.mail;
-    const user_id_for_db=req.body.userID;
+    // const useridFromLocalStorage=localStorage.getItem("userID");
+    // const notificationSendingMail=req.body.mail;
+    const useridForMail=req.body.email;
     const{Title,Price}=req.body;
 
-    const date=new Date();
-    const info_for_datex=`${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`;
 
-    if(notificationSendingMail=="notify"){
-        await pool.query(`INSERT INTO notificationTable(user_id,product_name,product_url,old_price,datex) VALUES($1,$2,$3,$4,$5)`,[user_id_for_db,Title,userURL,Price,info_for_datex]);
-        console.log("notification data  updated in database");
-    }
+    const date=new Date();
+    // const info_for_datex=`${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`;
+    await pool.query(`INSERT INTO notificationTable(user_id,product_name,product_url,old_price,datex) VALUES($1,$2,$3,$4,$5)`,[useridForMail,Title,userURL,Price,date]);
+    console.log("notification data  updated in database");
 })
 
 web.listen(3000,()=>{
     console.log("WEB is working on port 3000");
 })
+
