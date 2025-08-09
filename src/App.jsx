@@ -1,5 +1,10 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import Navbar from "./component/nav";
 import Footer from "./component/footer";
 import HeroSection from "./component/HeroSection";
@@ -9,15 +14,18 @@ import HowItWorks from "./component/HowItWorks";
 import Features from "./pages/Features";
 import Pricing from "./pages/Pricing";
 import Contact from "./pages/Contact";
+import Register from "./pages/signup";
+import Login from "./pages/login";
+
+const ProtectedRoute = ({ children }) => {
+  const isLoggedIn = localStorage.getItem("token"); // Check if token exists
+  return isLoggedIn ? children : <Navigate to="/login" replace />;
+};
 
 function HomePageContent() {
   return (
     <main>
-      <Routes>
-        <Route path="/" element={<HeroSection />} />
-        <Route path="/product-details" element={<ProductDetails />} />
-      </Routes>
-
+      <HeroSection />
       <div className="section-divider"></div>
       <h2 className="section-title">
         <span role="img" aria-label="cart" className="section-title-icon">
@@ -41,10 +49,55 @@ function App() {
         <Navbar />
 
         <Routes>
-          <Route path="/*" element={<HomePageContent />} />
-          <Route path="/features" element={<Features />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/contact" element={<Contact />} />
+          {/* Public Routes */}
+          <Route path="/" element={<Register />} />
+          <Route path="/signup" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+
+          {/* Protected Routes */}
+          <Route
+            path="/home"
+            element={
+              <ProtectedRoute>
+                <HomePageContent />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/product-details"
+            element={
+              <ProtectedRoute>
+                <ProductDetails />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/features"
+            element={
+              <ProtectedRoute>
+                <Features />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pricing"
+            element={
+              <ProtectedRoute>
+                <Pricing />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/contact"
+            element={
+              <ProtectedRoute>
+                <Contact />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Fallback Route */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
 
         <Footer />
