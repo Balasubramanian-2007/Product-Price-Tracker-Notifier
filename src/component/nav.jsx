@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styled, { keyframes, createGlobalStyle } from "styled-components";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 // Logo animation
 const logoGradientMove = keyframes`
@@ -8,22 +8,16 @@ const logoGradientMove = keyframes`
   100% { background-position: 100% 50%; }
 `;
 
-// Styled Components
 const GlobalStyle = createGlobalStyle``;
 
 const Logo = styled.div`
   font-size: 1.6rem;
   font-weight: 800;
   letter-spacing: 1px;
-  color: #fff;
-  padding: 0.2rem 1.2rem;
-  border-radius: 1.2rem;
   background: linear-gradient(90deg, #ff6f61, #ffd6d0, #687583, #ff6f61);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-fill-color: transparent;
   animation: ${logoGradientMove} 2.5s linear infinite;
 `;
 
@@ -37,8 +31,6 @@ const Nav = styled.nav`
   border-radius: 2rem;
   margin: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  position: relative;
-  z-index: 1002;
 `;
 
 const Menu = styled.ul`
@@ -62,7 +54,6 @@ const Menu = styled.ul`
     gap: 1rem;
     padding: ${({ open }) => (open ? "1rem 0" : "0")};
     transition: max-height 0.3s;
-    z-index: 2000;
   }
 `;
 
@@ -98,16 +89,22 @@ const Hamburger = styled.div`
 
 // Menu items
 const menuItems = [
-  { name: "Home", path: "/" },
+  { name: "Home", path: "/home" },
   { name: "Features", path: "/features" },
   { name: "Pricing", path: "/pricing" },
   { name: "Contact", path: "/contact" },
 ];
 
-// ✅ Main Navbar Component
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
 
   return (
     <>
@@ -121,12 +118,30 @@ const Navbar = () => {
         </Hamburger>
         <Menu open={open}>
           {menuItems.map((item) => (
-            <Link to={item.path} key={item.name} style={{ textDecoration: "none" }}>
-              <MenuItem className={location.pathname === item.path ? "active" : ""}>
+            <Link
+              to={item.path}
+              key={item.name}
+              style={{ textDecoration: "none" }}
+            >
+              <MenuItem
+                className={location.pathname === item.path ? "active" : ""}
+              >
                 {item.name}
               </MenuItem>
             </Link>
           ))}
+
+          {token ? (
+            <MenuItem onClick={handleLogout}>Logout</MenuItem>
+          ) : (
+            <Link to="/login" style={{ textDecoration: "none" }}>
+              <MenuItem
+                className={location.pathname === "/login" ? "active" : ""}
+              >
+                Login
+              </MenuItem>
+            </Link>
+          )}
         </Menu>
       </Nav>
     </>
