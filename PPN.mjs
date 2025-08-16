@@ -51,12 +51,12 @@ cron.schedule('*/10 * * * *',async()=>{   // for actual process (check between 1
                 const transporter=nodemailer.createTransport({
                     service:'gmail',
                     auth:{
-                        user:'24205037@nec.edu.in',
+                        user:'',
                         pass:process.env.EMAIL_APP_CODE
                     }
                 });
                 const mailOptions={
-                    from:'24205037@nec.edu.in',
+                    from:'',
                     to:senderEmail,
                     subject:"📢 Price Dropped (Alert) !🚨",
                     text:messageToSent
@@ -168,4 +168,5 @@ web.post("/notify",async(req,res)=>{
 web.listen(3000,()=>{
     console.log("WEB is working on port 3000");
 })
+
 
